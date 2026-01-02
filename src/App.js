@@ -144,38 +144,37 @@ const VBAKudos = () => {
     }
   };
 
-  const redeemPoints = async () => {
-    const balance = getUserBalance(currentUser.id);
-    if (balance.points_earned < 100) {
-      notify('Need at least 100 points to redeem', 'error');
-      return;
-    }
+  const redeemPoints = async (rewardType) => {
+  const balance = getUserBalance(currentUser.id);
 
-    try {
-      await supabase
-        .from('balances')
-        .update({
-          points_earned: balance.points_earned - 100,
-          points_redeemed: balance.points_redeemed + 100,
-        })
-        .eq('user_id', currentUser.id);
+  if (balance.points_earned < 100) {
+    notify('Need at least 100 points to redeem', 'error');
+    return;
+  }
 
-      await supabase.from('redemptions').insert({
-        id: `red_${Date.now()}`,
-        requestor_id: currentUser.id,
-        points_used: 100,
-        credit_amount: 5,
-        status: 'pending',
-        requested_at: new Date().toISOString(),
-      });
+  try {
+    await supabase.from('balances').update({
+      points_earned: balance.points_earned - 100,
+      points_redeemed: balance.points_redeemed + 100
+    }).eq('user_id', currentUser.id);
 
-      await loadData();
-      notify('Redemption submitted! Credit will arrive within 24 business hours.', 'success');
-    } catch (error) {
-      console.error('Error processing redemption:', error);
-      notify('Error processing redemption', 'error');
-    }
-  };
+    await supabase.from('redemptions').insert({
+      id: `red_${Date.now()}`,
+      requestor_id: currentUser.id,
+      points_used: 100,
+      credit_amount: 5,
+      reward_type: rewardType, // 👈 NEW
+      status: 'pending',
+      requested_at: new Date().toISOString()
+    });
+
+    await loadData();
+    notify('Redemption submitted!', 'success');
+  } catch (error) {
+    console.error('Error processing redemption:', error);
+    notify('Error processing redemption', 'error');
+  }
+};
 
   const updateRedemptionStatus = async (redemptionId, status, notes = '') => {
     try {
@@ -363,17 +362,27 @@ const VBAKudos = () => {
               </div>
               <div className="text-sm text-gray-600 mt-2">{progressToNext100} of 100 points</div>
             </div>
-            <button
-              onClick={redeemPoints}
-              disabled={!canRedeem}
-              className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-                canRedeem
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              }`}
-            >
-              Redeem for $5 Store Credit
-            </button>
+            <div className="flex space-x-3">
+  <button
+    onClick={() => redeemPoints('store')}
+    disabled={!canRedeem}
+    className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+      canRedeem ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+    }`}
+  >
+    Redeem $5 Store Credit
+  </button>
+
+  <button
+    onClick={() => redeemPoints('amazon')}
+    disabled={!canRedeem}
+    className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+      canRedeem ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+    }`}
+  >
+    Redeem $5 Amazon
+  </button>
+</div>
           </div>
         </div>
 
@@ -653,8 +662,9 @@ const VBAKudos = () => {
                         <div className="font-semibold text-gray-800">{requestor?.name}</div>
                         <div className="text-sm text-gray-500">{requestor?.department}</div>
                         <div className="text-sm text-gray-600 mt-2">
-                          <span className="font-medium">Amount:</span> ${red.credit_amount} store credit
-                        </div>
+                          <span className="font-medium">Reward:</span>{' '}
+  {red.reward_type === 'amazon' ? 'Amazon Gift Card' : 'VBA Store Credit'}
+</div>
                         <div className="text-sm text-gray-600">
                           <span className="font-medium">Points Used:</span> {red.points_used}
                         </div>
