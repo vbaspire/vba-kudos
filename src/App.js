@@ -12,7 +12,7 @@ const VBAKudos = () => {
   const [showNotification, setShowNotification] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // ✅ Login state MUST be here (top-level), not inside if(!currentUser)
+  // ✅ Login state MUST be top-level (NOT inside if blocks)
   const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
   const [password, setPassword] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -100,6 +100,30 @@ const VBAKudos = () => {
   const notify = (message, type) => {
     setShowNotification({ message, type });
     setTimeout(() => setShowNotification(null), 3000);
+  };
+
+  const handleLogin = () => {
+    const employee = employees.find((e) => e.id === selectedEmployeeId);
+
+    if (!employee) {
+      setLoginError('Please select an employee');
+      return;
+    }
+
+    if (!employee.password) {
+      setLoginError('Password not set for this user (admin must set it in Supabase)');
+      return;
+    }
+
+    if (employee.password !== password) {
+      setLoginError('Incorrect password');
+      return;
+    }
+
+    setCurrentUser(employee);
+    setActiveScreen('home');
+    setPassword('');
+    setLoginError('');
   };
 
   const giveKudos = async (receiverId, points, reason) => {
@@ -233,25 +257,6 @@ const VBAKudos = () => {
     };
   };
 
-  // ✅ Login handler (top-level, safe)
-  const handleLogin = () => {
-    const employee = employees.find((e) => e.id === selectedEmployeeId);
-    if (!employee) {
-      setLoginError('Please select an employee');
-      return;
-    }
-    if ((employee.password || '') !== password) {
-      setLoginError('Incorrect password');
-      return;
-    }
-
-    setLoginError('');
-    setPassword('');
-    setSelectedEmployeeId('');
-    setCurrentUser(employee);
-    setActiveScreen('home');
-  };
-
   const HomeScreen = () => {
     const balance = getUserBalance(currentUser.id);
     const recentActivity = getRecentActivity();
@@ -330,7 +335,7 @@ const VBAKudos = () => {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-gray-800">{giver?.name || 'Unknown'}</span>
+                        <span className="font-semibold text-gray-800">{giver?.name}</span>
                         <span className="text-blue-600 font-bold">+{txn.points}</span>
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
@@ -404,7 +409,10 @@ const VBAKudos = () => {
                   setPoints(
                     Math.max(
                       1,
-                      Math.min(parseInt(e.target.value) || 1, Math.min(10, balance.points_to_give))
+                      Math.min(
+                        parseInt(e.target.value) || 1,
+                        Math.min(10, balance.points_to_give)
+                      )
                     )
                   )
                 }
@@ -463,7 +471,7 @@ const VBAKudos = () => {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-gray-800">{receiver?.name || 'Unknown'}</span>
+                        <span className="font-semibold text-gray-800">{receiver?.name}</span>
                         <span className="text-green-600 font-bold">-{txn.points}</span>
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
@@ -493,7 +501,7 @@ const VBAKudos = () => {
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-gray-800">{giver?.name || 'Unknown'}</span>
+                        <span className="font-semibold text-gray-800">{giver?.name}</span>
                         <span className="text-blue-600 font-bold">+{txn.points}</span>
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
@@ -523,14 +531,17 @@ const VBAKudos = () => {
           ) : (
             <div className="space-y-3">
               {topReceivers.map((item, idx) => (
-                <div key={item.employee?.id || idx} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={item.employee?.id || `${idx}-r`}
+                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                >
                   <div className="text-2xl font-bold text-gray-400 w-8">#{idx + 1}</div>
                   <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {item.employee?.name?.charAt(0) || '?'}
                   </div>
                   <div className="flex-1">
-                    <div className="font-semibold text-gray-800">{item.employee?.name || 'Unknown'}</div>
-                    <div className="text-sm text-gray-500">{item.employee?.department || ''}</div>
+                    <div className="font-semibold text-gray-800">{item.employee?.name}</div>
+                    <div className="text-sm text-gray-500">{item.employee?.department}</div>
                   </div>
                   <div className="text-blue-600 font-bold text-xl">{item.points}</div>
                 </div>
@@ -546,14 +557,17 @@ const VBAKudos = () => {
           ) : (
             <div className="space-y-3">
               {topGivers.map((item, idx) => (
-                <div key={item.employee?.id || idx} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={item.employee?.id || `${idx}-g`}
+                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                >
                   <div className="text-2xl font-bold text-gray-400 w-8">#{idx + 1}</div>
                   <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {item.employee?.name?.charAt(0) || '?'}
                   </div>
                   <div className="flex-1">
-                    <div className="font-semibold text-gray-800">{item.employee?.name || 'Unknown'}</div>
-                    <div className="text-sm text-gray-500">{item.employee?.department || ''}</div>
+                    <div className="font-semibold text-gray-800">{item.employee?.name}</div>
+                    <div className="text-sm text-gray-500">{item.employee?.department}</div>
                   </div>
                   <div className="text-green-600 font-bold text-xl">{item.points}</div>
                 </div>
@@ -585,8 +599,8 @@ const VBAKudos = () => {
                         {requestor?.name?.charAt(0) || '?'}
                       </div>
                       <div>
-                        <div className="font-semibold text-gray-800">{requestor?.name || 'Unknown'}</div>
-                        <div className="text-sm text-gray-500">{requestor?.department || ''}</div>
+                        <div className="font-semibold text-gray-800">{requestor?.name}</div>
+                        <div className="text-sm text-gray-500">{requestor?.department}</div>
                         <div className="text-sm text-gray-600 mt-2">
                           <span className="font-medium">Amount:</span> ${red.credit_amount} store credit
                         </div>
@@ -606,7 +620,9 @@ const VBAKudos = () => {
                         Issue
                       </button>
                       <button
-                        onClick={() => updateRedemptionStatus(red.id, 'rejected', 'Please contact administrator')}
+                        onClick={() =>
+                          updateRedemptionStatus(red.id, 'rejected', 'Please contact administrator')
+                        }
                         className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
                       >
                         Reject
@@ -622,6 +638,7 @@ const VBAKudos = () => {
     );
   };
 
+  // Loading screen
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
@@ -633,7 +650,7 @@ const VBAKudos = () => {
     );
   }
 
-  // ✅ Password-protected login screen (hooks are already at top-level)
+  // Login screen (password-protected)
   if (!currentUser) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
@@ -693,6 +710,7 @@ const VBAKudos = () => {
     );
   }
 
+  // Main app
   return (
     <div className="min-h-screen bg-gray-50">
       {showNotification && (
@@ -717,10 +735,9 @@ const VBAKudos = () => {
           <button
             onClick={() => {
               setCurrentUser(null);
-              setActiveScreen('home');
+              setSelectedEmployeeId('');
               setPassword('');
               setLoginError('');
-              setSelectedEmployeeId('');
             }}
             className="flex items-center space-x-2 px-4 py-2 bg-blue-700 hover:bg-blue-800 rounded-lg transition-colors"
           >
