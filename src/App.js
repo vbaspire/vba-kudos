@@ -750,4 +750,22 @@ const VBAKudos = () => {
                 }`}
               >
                 <Icon className="w-4 h-4" />
-                <span className="font-medium">{label}</sp
+                <span className="font-medium">{label}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto px-4 py-8">
+        {activeScreen === 'home' && <HomeScreen />}
+        {activeScreen === 'give' && <GiveKudosScreen />}
+        {activeScreen === 'history' && <HistoryScreen />}
+        {activeScreen === 'leaderboard' && <LeaderboardScreen />}
+        {activeScreen === 'admin' && <AdminScreen />}
+      </main>
+    </div>
+  );
+};
+
+export default VBAKudos;
