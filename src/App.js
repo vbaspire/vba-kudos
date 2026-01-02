@@ -536,6 +536,23 @@ const VBAKudos = () => {
   }
 
   if (!currentUser) {
+    const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
+    const [password, setPassword] = useState('');
+    const [loginError, setLoginError] = useState('');
+
+    const handleLogin = () => {
+      const employee = employees.find(e => e.id === selectedEmployeeId);
+      if (!employee) {
+        setLoginError('Please select an employee');
+        return;
+      }
+      if (employee.password !== password) {
+        setLoginError('Incorrect password');
+        return;
+      }
+      setCurrentUser(employee);
+    };
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center p-4">
         <div className="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
@@ -544,14 +561,52 @@ const VBAKudos = () => {
             <h1 className="text-3xl font-bold text-gray-800 mb-2">VBA Kudos</h1>
             <p className="text-gray-600">Recognize great work</p>
           </div>
-          <div className="space-y-3">
-            {employees.map(emp => (
-              <button key={emp.id} onClick={() => setCurrentUser(emp)}
-                className="w-full p-4 text-left border-2 border-gray-200 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition-all">
-                <div className="font-semibold text-gray-800">{emp.name}</div>
-                <div className="text-sm text-gray-500">{emp.department}</div>
-              </button>
-            ))}
+          
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Select Your Name</label>
+              <select
+                value={selectedEmployeeId}
+                onChange={(e) => {
+                  setSelectedEmployeeId(e.target.value);
+                  setLoginError('');
+                }}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Choose your name...</option>
+                {employees.map(emp => (
+                  <option key={emp.id} value={emp.id}>
+                    {emp.name} - {emp.department}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setLoginError('');
+                }}
+                onKeyPress={(e) => e.key === 'Enter' && handleLogin()}
+                placeholder="Enter your password"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            {loginError && (
+              <div className="text-red-600 text-sm text-center">{loginError}</div>
+            )}
+
+            <button
+              onClick={handleLogin}
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition-colors"
+            >
+              Sign In
+            </button>
           </div>
         </div>
       </div>
