@@ -218,6 +218,26 @@ const VBAKudos = () => {
     const monthTransactions = transactions.filter(
       (t) => new Date(t.created_on).getMonth() === currentMonth
     );
+    
+// ✅ Admin Insight: Most used Core Value (this month)
+// Excludes system awards so birthdays/anniversaries don't impact results
+const getMostUsedCoreValue = () => {
+  const currentMonth = new Date().getMonth();
+  const counts = {};
+
+  transactions.forEach((t) => {
+    const isThisMonth = new Date(t.created_on).getMonth() === currentMonth;
+    const isSystem = t.giver_id === 'system';
+
+    if (isThisMonth && !isSystem && t.core_value) {
+      counts[t.core_value] = (counts[t.core_value] || 0) + 1;
+    }
+  });
+
+  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+
+  return sorted.length ? { value: sorted[0][0], count: sorted[0][1] } : null;
+};
 
     const receivers = {};
     const givers = {};
@@ -707,10 +727,34 @@ const VBAKudos = () => {
 
   const AdminScreen = () => {
     const pendingRedemptions = redemptions.filter((r) => r.status === 'pending');
+  const mostUsedCoreValue = getMostUsedCoreValue();
 
-    return (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">Pending Redemptions</h2>
+   return (
+  <div className="space-y-6">
+    {/* ✅ Core Value Insight Card */}
+    <div className="bg-white rounded-lg shadow p-6">
+      <h2 className="text-xl font-bold text-gray-800 mb-2">Core Value Insight (This Month)</h2>
+
+      {mostUsedCoreValue ? (
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-gray-600 text-sm">Most Used Core Value</p>
+            <p className="text-2xl font-bold text-blue-600">{mostUsedCoreValue.value}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-gray-500 text-sm">Times Selected</p>
+            <p className="text-2xl font-bold text-gray-800">{mostUsedCoreValue.count}</p>
+          </div>
+        </div>
+      ) : (
+        <p className="text-gray-500">No core values selected yet this month.</p>
+      )}
+    </div>
+
+    {/* ✅ Existing Pending Redemptions Card */}
+    <div className="bg-white rounded-lg shadow p-6">
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">Pending Redemptions</h2>
+
         {pendingRedemptions.length === 0 ? (
           <p className="text-gray-500 text-center py-8">No pending redemptions</p>
         ) : (
