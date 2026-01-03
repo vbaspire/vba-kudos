@@ -813,7 +813,151 @@ const VBAKudos = () => {
       </div>
     );
   };
+const RewardsScreen = () => {
+    const balance = getUserBalance(currentUser.id);
+    const canRedeem = balance.points_earned >= 100;
 
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Points Balance</h2>
+          <div className="flex items-center justify-between bg-blue-50 p-6 rounded-lg">
+            <div>
+              <p className="text-gray-600 text-sm mb-1">Available to Redeem</p>
+              <p className="text-4xl font-bold text-blue-600">{balance.points_earned}</p>
+              <p className="text-sm text-gray-500 mt-1">points</p>
+            </div>
+            <div className="text-right">
+              <p className="text-sm text-gray-600">Redemption Rate</p>
+              <p className="text-2xl font-bold text-gray-800">100 pts = $5</p>
+            </div>
+          </div>
+          {!canRedeem && (
+            <div className="mt-4 text-center text-sm text-orange-600 bg-orange-50 py-2 rounded">
+              You need {100 - balance.points_earned} more points to redeem
+            </div>
+          )}
+        </div>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-800">VBA Employee Store</h3>
+              <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                <Gift className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Redeem your points for VBA branded merchandise, apparel, and gear!
+            </p>
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 rounded text-sm text-gray-700">
+              <strong>How it works:</strong> Credit will be automatically added to your account at vba.ourproshop.com
+            </div>
+            <div className="space-y-3">
+              
+                href="https://vba.ourproshop.com/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full bg-blue-600 hover:bg-blue-700 text-white text-center font-semibold py-3 rounded-lg transition-colors"
+              >
+                Browse VBA Store →
+              </a>
+              <button
+                onClick={() => redeemPoints('store')}
+                disabled={!canRedeem}
+                className={`w-full font-semibold py-3 rounded-lg transition-colors ${
+                  canRedeem
+                    ? 'bg-green-600 hover:bg-green-700 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                {canRedeem ? 'Redeem for $5 Store Credit' : 'Need 100 Points'}
+              </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-lg shadow p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-bold text-gray-800">Amazon Gift Card</h3>
+              <div className="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center">
+                <Gift className="w-6 h-6 text-white" />
+              </div>
+            </div>
+            <p className="text-gray-600 mb-4">
+              Prefer Amazon? Redeem your points for an Amazon gift card!
+            </p>
+            <div className="bg-orange-50 border-l-4 border-orange-500 p-3 mb-4 rounded text-sm text-gray-700">
+              <strong>How it works:</strong> Virtual gift card code will be sent to your work email
+            </div>
+            <div className="space-y-3">
+              
+                href="https://www.amazon.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full bg-orange-500 hover:bg-orange-600 text-white text-center font-semibold py-3 rounded-lg transition-colors"
+              >
+                Browse Amazon →
+              </a>
+              <button
+                onClick={() => redeemPoints('amazon')}
+                disabled={!canRedeem}
+                className={`w-full font-semibold py-3 rounded-lg transition-colors ${
+                  canRedeem
+                    ? 'bg-green-600 hover:bg-green-700 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                {canRedeem ? 'Redeem for $5 Amazon' : 'Need 100 Points'}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-bold text-gray-800 mb-3">Redemption Process</h3>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span className="text-xl font-bold text-blue-600">1</span>
+              </div>
+              <p className="text-sm font-semibold text-gray-800 mb-1">Earn Points</p>
+              <p className="text-xs text-gray-600">Collect 100+ points</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span className="text-xl font-bold text-blue-600">2</span>
+              </div>
+              <p className="text-sm font-semibold text-gray-800 mb-1">Submit Request</p>
+              <p className="text-xs text-gray-600">Click redeem button</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span className="text-xl font-bold text-blue-600">3</span>
+              </div>
+              <p className="text-sm font-semibold text-gray-800 mb-1">Admin Approval</p>
+              <p className="text-xs text-gray-600">Processed by HR/Ops</p>
+            </div>
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <span className="text-xl font-bold text-blue-600">4</span>
+              </div>
+              <p className="text-sm font-semibold text-gray-800 mb-1">Receive Reward</p>
+              <p className="text-xs text-gray-600">Credit or gift card</p>
+            </div>
+          </div>
+          
+          <div className="mt-6 space-y-3">
+            <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-sm text-gray-700">
+              <strong>VBA Store Credit:</strong> Once approved, $5 credit will be added to your account at vba.ourproshop.com. Shop anytime!
+            </div>
+            <div className="bg-orange-50 border-l-4 border-orange-500 p-3 rounded text-sm text-gray-700">
+              <strong>Amazon Gift Card:</strong> Once approved, a virtual gift card code will be sent to your work email ({currentUser.email}). Check your inbox within 24 hours.
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  };
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
