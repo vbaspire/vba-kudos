@@ -729,34 +729,43 @@ const getMostUsedCoreValue = () => {
   };
 
   const AdminScreen = () => {
-    const pendingRedemptions = redemptions.filter((r) => r.status === 'pending');
+  const pendingRedemptions = redemptions.filter((r) => r.status === 'pending');
   const mostUsedCoreValue = getMostUsedCoreValue();
 
-   return (
-  <div className="space-y-6">
-    {/* ✅ Core Value Insight Card */}
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-xl font-bold text-gray-800 mb-2">Core Value Insight (This Month)</h2>
+  return (
+    <div className="space-y-6">
+      {/* ✅ Core Value Insight Card */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-xl font-bold text-gray-800 mb-2">
+          Core Value Insight (This Month)
+        </h2>
 
-      {mostUsedCoreValue ? (
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-gray-600 text-sm">Most Used Core Value</p>
-            <p className="text-2xl font-bold text-blue-600">{mostUsedCoreValue.value}</p>
-          </div>
-          <div className="text-right">
-            <p className="text-gray-500 text-sm">Times Selected</p>
-            <p className="text-2xl font-bold text-gray-800">{mostUsedCoreValue.count}</p>
-          </div>
-        </div>
-      ) : (
-        <p className="text-gray-500">No core values selected yet this month.</p>
-      )}
-    </div>
+        {mostUsedCoreValue ? (
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-gray-600 text-sm">Most Used Core Value</p>
+              <p className="text-2xl font-bold text-blue-600">
+                {mostUsedCoreValue.value}
+              </p>
+            </div>
 
-    {/* ✅ Existing Pending Redemptions Card */}
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">Pending Redemptions</h2>
+            <div className="text-right">
+              <p className="text-gray-500 text-sm">Times Selected</p>
+              <p className="text-2xl font-bold text-gray-800">
+                {mostUsedCoreValue.count}
+              </p>
+            </div>
+          </div>
+        ) : (
+          <p className="text-gray-500">No core values selected yet this month.</p>
+        )}
+      </div>
+
+      {/* ✅ Pending Redemptions */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6">
+          Pending Redemptions
+        </h2>
 
         {pendingRedemptions.length === 0 ? (
           <p className="text-gray-500 text-center py-8">No pending redemptions</p>
@@ -764,6 +773,7 @@ const getMostUsedCoreValue = () => {
           <div className="space-y-4">
             {pendingRedemptions.map((red) => {
               const requestor = employees.find((e) => e.id === red.requestor_id);
+
               return (
                 <div key={red.id} className="border border-gray-200 rounded-lg p-4">
                   <div className="flex items-start justify-between">
@@ -771,21 +781,29 @@ const getMostUsedCoreValue = () => {
                       <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
                         {requestor?.name?.charAt(0) || '?'}
                       </div>
+
                       <div>
                         <div className="font-semibold text-gray-800">{requestor?.name}</div>
                         <div className="text-sm text-gray-500">{requestor?.department}</div>
+
                         <div className="text-sm text-gray-600 mt-2">
                           <span className="font-medium">Reward:</span>{' '}
                           {red.reward_type === 'amazon' ? 'Amazon Gift Card' : 'VBA Store Credit'}
                         </div>
+
                         <div className="text-sm text-gray-600">
                           <span className="font-medium">Points Used:</span> {red.points_used}
                         </div>
+
                         <div className="text-sm text-gray-500 mt-1">
-                          Requested: {new Date(red.requested_at + 'Z').toLocaleString('en-US', { timeZone: 'America/Chicago' })}
+                          Requested:{' '}
+                          {new Date(red.requested_at + 'Z').toLocaleString('en-US', {
+                            timeZone: 'America/Chicago',
+                          })}
                         </div>
                       </div>
                     </div>
+
                     <div className="flex space-x-2">
                       <button
                         onClick={() => updateRedemptionStatus(red.id, 'issued')}
@@ -793,6 +811,7 @@ const getMostUsedCoreValue = () => {
                       >
                         Issue
                       </button>
+
                       <button
                         onClick={() =>
                           updateRedemptionStatus(red.id, 'rejected', 'Please contact administrator')
@@ -809,8 +828,9 @@ const getMostUsedCoreValue = () => {
           </div>
         )}
       </div>
-    );
-  };
+    </div>
+  );
+};
 
   if (isLoading) {
     return (
