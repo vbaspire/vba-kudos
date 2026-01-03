@@ -432,8 +432,8 @@ const VBAKudos = () => {
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
                       <p className="text-gray-400 text-xs mt-1">
-                        {new Date(txn.created_on).toLocaleDateString()}
-                      </p>
+  {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}
+</p>
                     </div>
                   </div>
                 );
@@ -568,8 +568,8 @@ const VBAKudos = () => {
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
                       <p className="text-gray-400 text-xs mt-1">
-                        {new Date(txn.created_on).toLocaleDateString()}
-                      </p>
+  {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}
+</p>
                     </div>
                   </div>
                 );
@@ -607,8 +607,8 @@ const VBAKudos = () => {
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
                       <p className="text-gray-400 text-xs mt-1">
-                        {new Date(txn.created_on).toLocaleDateString()}
-                      </p>
+  {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}
+</p>
                     </div>
                   </div>
                 );
@@ -710,7 +710,7 @@ const VBAKudos = () => {
                           <span className="font-medium">Points Used:</span> {red.points_used}
                         </div>
                         <div className="text-sm text-gray-500 mt-1">
-                          Requested: {new Date(red.requested_at).toLocaleString()}
+                          Requested: {new Date(red.requested_at + 'Z').toLocaleString('en-US', { timeZone: 'America/Chicago' })}
                         </div>
                       </div>
                     </div>
