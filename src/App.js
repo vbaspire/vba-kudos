@@ -14,8 +14,12 @@ const VBAKudos = () => {
 
   const ADMIN_EMAILS = ['kowenby@vbaspire.com', 'jblue@vbaspire.com', 'bpeebles@vbaspire.com'];
 
+  // ✅ IMPORTANT: exclude system user from UI lists
+  const isSystemUser = (emp) => emp?.id === 'system' || emp?.email === 'system@vbaspire.com';
+
   useEffect(() => {
     initializeSystem();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const initializeSystem = async () => {
@@ -145,36 +149,39 @@ const VBAKudos = () => {
   };
 
   const redeemPoints = async (rewardType) => {
-  const balance = getUserBalance(currentUser.id);
+    const balance = getUserBalance(currentUser.id);
 
-  if (balance.points_earned < 100) {
-    notify('Need at least 100 points to redeem', 'error');
-    return;
-  }
+    if (balance.points_earned < 100) {
+      notify('Need at least 100 points to redeem', 'error');
+      return;
+    }
 
-  try {
-    await supabase.from('balances').update({
-      points_earned: balance.points_earned - 100,
-      points_redeemed: balance.points_redeemed + 100
-    }).eq('user_id', currentUser.id);
+    try {
+      await supabase
+        .from('balances')
+        .update({
+          points_earned: balance.points_earned - 100,
+          points_redeemed: balance.points_redeemed + 100,
+        })
+        .eq('user_id', currentUser.id);
 
-    await supabase.from('redemptions').insert({
-      id: `red_${Date.now()}`,
-      requestor_id: currentUser.id,
-      points_used: 100,
-      credit_amount: 5,
-      reward_type: rewardType, // 👈 NEW
-      status: 'pending',
-      requested_at: new Date().toISOString()
-    });
+      await supabase.from('redemptions').insert({
+        id: `red_${Date.now()}`,
+        requestor_id: currentUser.id,
+        points_used: 100,
+        credit_amount: 5,
+        reward_type: rewardType, // 'store' | 'amazon'
+        status: 'pending',
+        requested_at: new Date().toISOString(),
+      });
 
-    await loadData();
-    notify('Redemption submitted!', 'success');
-  } catch (error) {
-    console.error('Error processing redemption:', error);
-    notify('Error processing redemption', 'error');
-  }
-};
+      await loadData();
+      notify('Redemption submitted!', 'success');
+    } catch (error) {
+      console.error('Error processing redemption:', error);
+      notify('Error processing redemption', 'error');
+    }
+  };
 
   const updateRedemptionStatus = async (redemptionId, status, notes = '') => {
     try {
@@ -211,7 +218,11 @@ const VBAKudos = () => {
 
     monthTransactions.forEach((t) => {
       receivers[t.receiver_id] = (receivers[t.receiver_id] || 0) + t.points;
-      givers[t.giver_id] = (givers[t.giver_id] || 0) + t.points;
+
+      // ✅ OPTIONAL: exclude system from "Top Givers" so it doesn't dominate
+      if (t.giver_id !== 'system') {
+        givers[t.giver_id] = (givers[t.giver_id] || 0) + t.points;
+      }
     });
 
     return {
@@ -239,7 +250,6 @@ const VBAKudos = () => {
         return;
       }
 
-      // If password field is missing/null, force admin to set it in Supabase
       if (!employee.password) {
         setLoginError('Password not set for this user. Ask admin to set it in Supabase.');
         return;
@@ -275,7 +285,7 @@ const VBAKudos = () => {
               >
                 <option value="">Choose your name...</option>
                 {employees
-                  .filter((emp) => emp.active)
+                  .filter((emp) => emp.active && !isSystemUser(emp)) // ✅ hide system
                   .map((emp) => (
                     <option key={emp.id} value={emp.id}>
                       {emp.name} - {emp.department}
@@ -362,27 +372,32 @@ const VBAKudos = () => {
               </div>
               <div className="text-sm text-gray-600 mt-2">{progressToNext100} of 100 points</div>
             </div>
-            <div className="flex space-x-3">
-  <button
-    onClick={() => redeemPoints('store')}
-    disabled={!canRedeem}
-    className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-      canRedeem ? 'bg-blue-600 hover:bg-blue-700 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-    }`}
-  >
-    Redeem $5 Store Credit
-  </button>
 
-  <button
-    onClick={() => redeemPoints('amazon')}
-    disabled={!canRedeem}
-    className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
-      canRedeem ? 'bg-orange-500 hover:bg-orange-600 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-    }`}
-  >
-    Redeem $5 Amazon
-  </button>
-</div>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => redeemPoints('store')}
+                disabled={!canRedeem}
+                className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+                  canRedeem
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Redeem $5 Store Credit
+              </button>
+
+              <button
+                onClick={() => redeemPoints('amazon')}
+                disabled={!canRedeem}
+                className={`px-6 py-3 rounded-lg font-semibold transition-colors ${
+                  canRedeem
+                    ? 'bg-orange-500 hover:bg-orange-600 text-white'
+                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Redeem $5 Amazon
+              </button>
+            </div>
           </div>
         </div>
 
@@ -394,15 +409,26 @@ const VBAKudos = () => {
             <div className="space-y-3">
               {recentActivity.map((txn) => {
                 const giver = employees.find((e) => e.id === txn.giver_id);
+                const giverName = giver?.name || (txn.giver_id === 'system' ? 'VBA Kudos System' : 'Unknown');
+
+                const isSystemTxn = txn.giver_id === 'system';
+
                 return (
                   <div key={txn.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                      {giver?.name?.charAt(0) || '?'}
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
+                        isSystemTxn ? 'bg-purple-600' : 'bg-blue-600'
+                      }`}
+                      title={isSystemTxn ? 'System Award' : 'Employee Award'}
+                    >
+                      {isSystemTxn ? '★' : giverName?.charAt(0) || '?'}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-gray-800">{giver?.name}</span>
-                        <span className="text-blue-600 font-bold">+{txn.points}</span>
+                        <span className="font-semibold text-gray-800">{giverName}</span>
+                        <span className={`font-bold ${isSystemTxn ? 'text-purple-600' : 'text-blue-600'}`}>
+                          +{txn.points}
+                        </span>
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
                       <p className="text-gray-400 text-xs mt-1">
@@ -455,7 +481,7 @@ const VBAKudos = () => {
               >
                 <option value="">Choose an employee...</option>
                 {employees
-                  .filter((emp) => emp.id !== currentUser.id && emp.active)
+                  .filter((emp) => emp.id !== currentUser.id && emp.active && !isSystemUser(emp)) // ✅ hide system
                   .map((emp) => (
                     <option key={emp.id} value={emp.id}>
                       {emp.name} - {emp.department}
@@ -560,15 +586,24 @@ const VBAKudos = () => {
             <div className="space-y-3">
               {received.map((txn) => {
                 const giver = employees.find((e) => e.id === txn.giver_id);
+                const giverName = giver?.name || (txn.giver_id === 'system' ? 'VBA Kudos System' : 'Unknown');
+                const isSystemTxn = txn.giver_id === 'system';
+
                 return (
                   <div key={txn.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
-                      {giver?.name?.charAt(0) || '?'}
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
+                        isSystemTxn ? 'bg-purple-600' : 'bg-blue-600'
+                      }`}
+                    >
+                      {isSystemTxn ? '★' : giverName?.charAt(0) || '?'}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-center justify-between">
-                        <span className="font-semibold text-gray-800">{giver?.name}</span>
-                        <span className="text-blue-600 font-bold">+{txn.points}</span>
+                        <span className="font-semibold text-gray-800">{giverName}</span>
+                        <span className={`font-bold ${isSystemTxn ? 'text-purple-600' : 'text-blue-600'}`}>
+                          +{txn.points}
+                        </span>
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
                       <p className="text-gray-400 text-xs mt-1">
@@ -597,7 +632,10 @@ const VBAKudos = () => {
           ) : (
             <div className="space-y-3">
               {topReceivers.map((item, idx) => (
-                <div key={item.employee?.id || idx} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={item.employee?.id || idx}
+                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                >
                   <div className="text-2xl font-bold text-gray-400 w-8">#{idx + 1}</div>
                   <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {item.employee?.name?.charAt(0) || '?'}
@@ -620,7 +658,10 @@ const VBAKudos = () => {
           ) : (
             <div className="space-y-3">
               {topGivers.map((item, idx) => (
-                <div key={item.employee?.id || idx} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={item.employee?.id || idx}
+                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                >
                   <div className="text-2xl font-bold text-gray-400 w-8">#{idx + 1}</div>
                   <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {item.employee?.name?.charAt(0) || '?'}
@@ -663,8 +704,8 @@ const VBAKudos = () => {
                         <div className="text-sm text-gray-500">{requestor?.department}</div>
                         <div className="text-sm text-gray-600 mt-2">
                           <span className="font-medium">Reward:</span>{' '}
-  {red.reward_type === 'amazon' ? 'Amazon Gift Card' : 'VBA Store Credit'}
-</div>
+                          {red.reward_type === 'amazon' ? 'Amazon Gift Card' : 'VBA Store Credit'}
+                        </div>
                         <div className="text-sm text-gray-600">
                           <span className="font-medium">Points Used:</span> {red.points_used}
                         </div>
