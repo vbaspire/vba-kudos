@@ -13,18 +13,12 @@ const VBAKudos = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const ADMIN_EMAILS = ['kowenby@vbaspire.com', 'jblue@vbaspire.com', 'bpeebles@vbaspire.com'];
-  const CORE_VALUES = [
-  'Integrity',
-  'Innovation',
-  'Empowerment'
-];
+  const CORE_VALUES = ['Integrity', 'Innovation', 'Empowerment'];
 
-  // ✅ IMPORTANT: exclude system user from UI lists
   const isSystemUser = (emp) => emp?.id === 'system' || emp?.email === 'system@vbaspire.com';
 
   useEffect(() => {
     initializeSystem();
-    // eslint-disable-next-line
   }, []);
 
   const initializeSystem = async () => {
@@ -134,14 +128,14 @@ const VBAKudos = () => {
         .eq('user_id', receiverId);
 
       await supabase.from('transactions').insert({
-  id: `txn_${Date.now()}`,
-  giver_id: currentUser.id,
-  receiver_id: receiverId,
-  points,
-  reason,
-  core_value: coreValue, // 👈 NEW
-  created_on: new Date().toISOString(),
-});
+        id: `txn_${Date.now()}`,
+        giver_id: currentUser.id,
+        receiver_id: receiverId,
+        points,
+        reason,
+        core_value: coreValue,
+        created_on: new Date().toISOString(),
+      });
 
       await loadData();
       const receiver = employees.find((e) => e.id === receiverId);
@@ -176,7 +170,7 @@ const VBAKudos = () => {
         requestor_id: currentUser.id,
         points_used: 100,
         credit_amount: 5,
-        reward_type: rewardType, // 'store' | 'amazon'
+        reward_type: rewardType,
         status: 'pending',
         requested_at: new Date().toISOString(),
       });
@@ -213,31 +207,28 @@ const VBAKudos = () => {
     return transactions.filter((t) => t.receiver_id === currentUser?.id).slice(0, 5);
   };
 
+  const getMostUsedCoreValue = () => {
+    const currentMonth = new Date().getMonth();
+    const counts = {};
+
+    transactions.forEach((t) => {
+      const isThisMonth = new Date(t.created_on).getMonth() === currentMonth;
+      const isSystem = t.giver_id === 'system';
+
+      if (isThisMonth && !isSystem && t.core_value) {
+        counts[t.core_value] = (counts[t.core_value] || 0) + 1;
+      }
+    });
+
+    const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
+    return sorted.length ? { value: sorted[0][0], count: sorted[0][1] } : null;
+  };
+
   const getLeaderboardData = () => {
     const currentMonth = new Date().getMonth();
     const monthTransactions = transactions.filter(
       (t) => new Date(t.created_on).getMonth() === currentMonth
     );
-    
-// ✅ Admin Insight: Most used Core Value (this month)
-// Excludes system awards so birthdays/anniversaries don't impact results
-const getMostUsedCoreValue = () => {
-  const currentMonth = new Date().getMonth();
-  const counts = {};
-
-  transactions.forEach((t) => {
-    const isThisMonth = new Date(t.created_on).getMonth() === currentMonth;
-    const isSystem = t.giver_id === 'system';
-
-    if (isThisMonth && !isSystem && t.core_value) {
-      counts[t.core_value] = (counts[t.core_value] || 0) + 1;
-    }
-  });
-
-  const sorted = Object.entries(counts).sort((a, b) => b[1] - a[1]);
-
-  return sorted.length ? { value: sorted[0][0], count: sorted[0][1] } : null;
-};
 
     const receivers = {};
     const givers = {};
@@ -245,7 +236,6 @@ const getMostUsedCoreValue = () => {
     monthTransactions.forEach((t) => {
       receivers[t.receiver_id] = (receivers[t.receiver_id] || 0) + t.points;
 
-      // ✅ OPTIONAL: exclude system from "Top Givers" so it doesn't dominate
       if (t.giver_id !== 'system') {
         givers[t.giver_id] = (givers[t.giver_id] || 0) + t.points;
       }
@@ -263,7 +253,6 @@ const getMostUsedCoreValue = () => {
     };
   };
 
-  // ✅ Login Screen as a real component (hooks are allowed here)
   const LoginScreen = () => {
     const [selectedEmployeeId, setSelectedEmployeeId] = useState('');
     const [password, setPassword] = useState('');
@@ -311,7 +300,7 @@ const getMostUsedCoreValue = () => {
               >
                 <option value="">Choose your name...</option>
                 {employees
-                  .filter((emp) => emp.active && !isSystemUser(emp)) // ✅ hide system
+                  .filter((emp) => emp.active && !isSystemUser(emp))
                   .map((emp) => (
                     <option key={emp.id} value={emp.id}>
                       {emp.name} - {emp.department}
@@ -436,7 +425,6 @@ const getMostUsedCoreValue = () => {
               {recentActivity.map((txn) => {
                 const giver = employees.find((e) => e.id === txn.giver_id);
                 const giverName = giver?.name || (txn.giver_id === 'system' ? 'VBA Kudos System' : 'Unknown');
-
                 const isSystemTxn = txn.giver_id === 'system';
 
                 return (
@@ -457,9 +445,12 @@ const getMostUsedCoreValue = () => {
                         </span>
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
+                      {txn.core_value && (
+                        <p className="text-xs text-blue-600 mt-1">🏆 {txn.core_value}</p>
+                      )}
                       <p className="text-gray-400 text-xs mt-1">
-  {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}
-</p>
+                        {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}
+                      </p>
                     </div>
                   </div>
                 );
@@ -509,7 +500,7 @@ const getMostUsedCoreValue = () => {
               >
                 <option value="">Choose an employee...</option>
                 {employees
-                  .filter((emp) => emp.id !== currentUser.id && emp.active && !isSystemUser(emp)) // ✅ hide system
+                  .filter((emp) => emp.id !== currentUser.id && emp.active && !isSystemUser(emp))
                   .map((emp) => (
                     <option key={emp.id} value={emp.id}>
                       {emp.name} - {emp.department}
@@ -529,10 +520,7 @@ const getMostUsedCoreValue = () => {
                   setPoints(
                     Math.max(
                       1,
-                      Math.min(
-                        parseInt(e.target.value, 10) || 1,
-                        Math.min(10, balance.points_to_give)
-                      )
+                      Math.min(parseInt(e.target.value, 10) || 1, Math.min(10, balance.points_to_give))
                     )
                   )
                 }
@@ -551,23 +539,22 @@ const getMostUsedCoreValue = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
-<div>
-  <label className="block text-sm font-medium text-gray-700 mb-2">
-    Core Value (optional)
-  </label>
-  <select
-    value={coreValue}
-    onChange={(e) => setCoreValue(e.target.value)}
-    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-  >
-    <option value="">Select a core value</option>
-    {CORE_VALUES.map((value) => (
-      <option key={value} value={value}>
-        {value}
-      </option>
-    ))}
-  </select>
-</div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Core Value (optional)</label>
+              <select
+                value={coreValue}
+                onChange={(e) => setCoreValue(e.target.value)}
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="">Select a core value...</option>
+                {CORE_VALUES.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            </div>
 
             <button
               type="button"
@@ -612,9 +599,12 @@ const getMostUsedCoreValue = () => {
                         <span className="text-green-600 font-bold">-{txn.points}</span>
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
+                      {txn.core_value && (
+                        <p className="text-xs text-blue-600 mt-1">🏆 {txn.core_value}</p>
+                      )}
                       <p className="text-gray-400 text-xs mt-1">
-  {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}
-</p>
+                        {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}
+                      </p>
                     </div>
                   </div>
                 );
@@ -651,9 +641,12 @@ const getMostUsedCoreValue = () => {
                         </span>
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
+                      {txn.core_value && (
+                        <p className="text-xs text-blue-600 mt-1">🏆 {txn.core_value}</p>
+                      )}
                       <p className="text-gray-400 text-xs mt-1">
-  {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}
-</p>
+                        {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}
+                      </p>
                     </div>
                   </div>
                 );
@@ -664,9 +657,6 @@ const getMostUsedCoreValue = () => {
       </div>
     );
   };
-    </div>
-  );
-};
 
   const LeaderboardScreen = () => {
     const { topReceivers, topGivers } = getLeaderboardData();
@@ -680,10 +670,7 @@ const getMostUsedCoreValue = () => {
           ) : (
             <div className="space-y-3">
               {topReceivers.map((item, idx) => (
-                <div
-                  key={item.employee?.id || idx}
-                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
-                >
+                <div key={item.employee?.id || idx} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                   <div className="text-2xl font-bold text-gray-400 w-8">#{idx + 1}</div>
                   <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {item.employee?.name?.charAt(0) || '?'}
@@ -706,10 +693,7 @@ const getMostUsedCoreValue = () => {
           ) : (
             <div className="space-y-3">
               {topGivers.map((item, idx) => (
-                <div
-                  key={item.employee?.id || idx}
-                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
-                >
+                <div key={item.employee?.id || idx} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
                   <div className="text-2xl font-bold text-gray-400 w-8">#{idx + 1}</div>
                   <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {item.employee?.name?.charAt(0) || '?'}
@@ -729,108 +713,83 @@ const getMostUsedCoreValue = () => {
   };
 
   const AdminScreen = () => {
-  const pendingRedemptions = redemptions.filter((r) => r.status === 'pending');
-  const mostUsedCoreValue = getMostUsedCoreValue();
+    const pendingRedemptions = redemptions.filter((r) => r.status === 'pending');
+    const mostUsedCoreValue = getMostUsedCoreValue();
 
-  return (
-    <div className="space-y-6">
-      {/* ✅ Core Value Insight Card */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-2">
-          Core Value Insight (This Month)
-        </h2>
-
-        {mostUsedCoreValue ? (
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-600 text-sm">Most Used Core Value</p>
-              <p className="text-2xl font-bold text-blue-600">
-                {mostUsedCoreValue.value}
-              </p>
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Core Value Insight (This Month)</h2>
+          {mostUsedCoreValue ? (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm">Most Used Core Value</p>
+                <p className="text-2xl font-bold text-blue-600">{mostUsedCoreValue.value}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-gray-500 text-sm">Times Selected</p>
+                <p className="text-2xl font-bold text-gray-800">{mostUsedCoreValue.count}</p>
+              </div>
             </div>
+          ) : (
+            <p className="text-gray-500">No core values selected yet this month.</p>
+          )}
+        </div>
 
-            <div className="text-right">
-              <p className="text-gray-500 text-sm">Times Selected</p>
-              <p className="text-2xl font-bold text-gray-800">
-                {mostUsedCoreValue.count}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <p className="text-gray-500">No core values selected yet this month.</p>
-        )}
-      </div>
-
-      {/* ✅ Pending Redemptions */}
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold text-gray-800 mb-6">
-          Pending Redemptions
-        </h2>
-
-        {pendingRedemptions.length === 0 ? (
-          <p className="text-gray-500 text-center py-8">No pending redemptions</p>
-        ) : (
-          <div className="space-y-4">
-            {pendingRedemptions.map((red) => {
-              const requestor = employees.find((e) => e.id === red.requestor_id);
-
-              return (
-                <div key={red.id} className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex items-start space-x-3">
-                      <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                        {requestor?.name?.charAt(0) || '?'}
-                      </div>
-
-                      <div>
-                        <div className="font-semibold text-gray-800">{requestor?.name}</div>
-                        <div className="text-sm text-gray-500">{requestor?.department}</div>
-
-                        <div className="text-sm text-gray-600 mt-2">
-                          <span className="font-medium">Reward:</span>{' '}
-                          {red.reward_type === 'amazon' ? 'Amazon Gift Card' : 'VBA Store Credit'}
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Pending Redemptions</h2>
+          {pendingRedemptions.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No pending redemptions</p>
+          ) : (
+            <div className="space-y-4">
+              {pendingRedemptions.map((red) => {
+                const requestor = employees.find((e) => e.id === red.requestor_id);
+                return (
+                  <div key={red.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                          {requestor?.name?.charAt(0) || '?'}
                         </div>
-
-                        <div className="text-sm text-gray-600">
-                          <span className="font-medium">Points Used:</span> {red.points_used}
-                        </div>
-
-                        <div className="text-sm text-gray-500 mt-1">
-                          Requested:{' '}
-                          {new Date(red.requested_at + 'Z').toLocaleString('en-US', {
-                            timeZone: 'America/Chicago',
-                          })}
+                        <div>
+                          <div className="font-semibold text-gray-800">{requestor?.name}</div>
+                          <div className="text-sm text-gray-500">{requestor?.department}</div>
+                          <div className="text-sm text-gray-600 mt-2">
+                            <span className="font-medium">Reward:</span>{' '}
+                            {red.reward_type === 'amazon' ? 'Amazon Gift Card' : 'VBA Store Credit'}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            <span className="font-medium">Points Used:</span> {red.points_used}
+                          </div>
+                          <div className="text-sm text-gray-500 mt-1">
+                            Requested: {new Date(red.requested_at + 'Z').toLocaleString('en-US', { timeZone: 'America/Chicago' })}
+                          </div>
                         </div>
                       </div>
-                    </div>
-
-                    <div className="flex space-x-2">
-                      <button
-                        onClick={() => updateRedemptionStatus(red.id, 'issued')}
-                        className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-                      >
-                        Issue
-                      </button>
-
-                      <button
-                        onClick={() =>
-                          updateRedemptionStatus(red.id, 'rejected', 'Please contact administrator')
-                        }
-                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                      >
-                        Reject
-                      </button>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => updateRedemptionStatus(red.id, 'issued')}
+                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                        >
+                          Issue
+                        </button>
+                        <button
+                          onClick={() => updateRedemptionStatus(red.id, 'rejected', 'Please contact administrator')}
+                          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  };
 
   if (isLoading) {
     return (
