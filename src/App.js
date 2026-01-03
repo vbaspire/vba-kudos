@@ -664,6 +664,9 @@ const getMostUsedCoreValue = () => {
       </div>
     );
   };
+    </div>
+  );
+};
 
   const LeaderboardScreen = () => {
     const { topReceivers, topGivers } = getLeaderboardData();
