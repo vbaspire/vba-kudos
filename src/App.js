@@ -13,6 +13,11 @@ const VBAKudos = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const ADMIN_EMAILS = ['kowenby@vbaspire.com', 'jblue@vbaspire.com', 'bpeebles@vbaspire.com'];
+  const CORE_VALUES = [
+  'Integrity',
+  'Innovation',
+  'Empowerment'
+];
 
   // ✅ IMPORTANT: exclude system user from UI lists
   const isSystemUser = (emp) => emp?.id === 'system' || emp?.email === 'system@vbaspire.com';
@@ -99,7 +104,7 @@ const VBAKudos = () => {
     setTimeout(() => setShowNotification(null), 3000);
   };
 
-  const giveKudos = async (receiverId, points, reason) => {
+  const giveKudos = async (receiverId, points, reason, coreValue = null) => {
     if (!currentUser || receiverId === currentUser.id) {
       notify('Cannot give kudos to yourself', 'error');
       throw new Error('Cannot give kudos to yourself');
@@ -129,13 +134,14 @@ const VBAKudos = () => {
         .eq('user_id', receiverId);
 
       await supabase.from('transactions').insert({
-        id: `txn_${Date.now()}`,
-        giver_id: currentUser.id,
-        receiver_id: receiverId,
-        points,
-        reason,
-        created_on: new Date().toISOString(),
-      });
+  id: `txn_${Date.now()}`,
+  giver_id: currentUser.id,
+  receiver_id: receiverId,
+  points,
+  reason,
+  core_value: coreValue, // 👈 NEW
+  created_on: new Date().toISOString(),
+});
 
       await loadData();
       const receiver = employees.find((e) => e.id === receiverId);
@@ -449,6 +455,7 @@ const VBAKudos = () => {
     const [selectedEmployee, setSelectedEmployee] = useState('');
     const [points, setPoints] = useState(5);
     const [reason, setReason] = useState('');
+    const [coreValue, setCoreValue] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const balance = getUserBalance(currentUser.id);
 
@@ -456,10 +463,11 @@ const VBAKudos = () => {
       if (isSubmitting || !selectedEmployee || !reason.trim()) return;
       setIsSubmitting(true);
       try {
-        await giveKudos(selectedEmployee, points, reason);
+        await giveKudos(selectedEmployee, points, reason, coreValue || null);
         setSelectedEmployee('');
         setPoints(5);
         setReason('');
+        setCoreValue('');
       } catch (error) {
         console.error(error);
       } finally {
@@ -523,6 +531,23 @@ const VBAKudos = () => {
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               />
             </div>
+<div>
+  <label className="block text-sm font-medium text-gray-700 mb-2">
+    Core Value (optional)
+  </label>
+  <select
+    value={coreValue}
+    onChange={(e) => setCoreValue(e.target.value)}
+    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
+  >
+    <option value="">Select a core value (optional)</option>
+    {CORE_VALUES.map((value) => (
+      <option key={value} value={value}>
+        {value}
+      </option>
+    ))}
+  </select>
+</div>
 
             <button
               type="button"
