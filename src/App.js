@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Gift, Award, TrendingUp, History, ShieldCheck, LogOut } from 'lucide-react';
+import { Gift, Award, TrendingUp, History, ShieldCheck, LogOut, ShoppingBag } from 'lucide-react';
 import { supabase } from './supabaseClient';
 
 const VBAKudos = () => {
@@ -19,6 +19,7 @@ const VBAKudos = () => {
 
   useEffect(() => {
     initializeSystem();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const initializeSystem = async () => {
@@ -170,7 +171,7 @@ const VBAKudos = () => {
         requestor_id: currentUser.id,
         points_used: 100,
         credit_amount: 5,
-        reward_type: rewardType,
+        reward_type: rewardType, // 'store' | 'amazon'
         status: 'pending',
         requested_at: new Date().toISOString(),
       });
@@ -235,7 +236,6 @@ const VBAKudos = () => {
 
     monthTransactions.forEach((t) => {
       receivers[t.receiver_id] = (receivers[t.receiver_id] || 0) + t.points;
-
       if (t.giver_id !== 'system') {
         givers[t.giver_id] = (givers[t.giver_id] || 0) + t.points;
       }
@@ -467,11 +467,11 @@ const VBAKudos = () => {
                         </span>
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
-                      {txn.core_value && (
-                        <p className="text-xs text-blue-600 mt-1">🏆 {txn.core_value}</p>
-                      )}
+                      {txn.core_value && <p className="text-xs text-blue-600 mt-1">🏆 {txn.core_value}</p>}
                       <p className="text-gray-400 text-xs mt-1">
-                        {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}
+                        {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', {
+                          timeZone: 'America/Chicago',
+                        })}
                       </p>
                     </div>
                   </div>
@@ -600,6 +600,9 @@ const VBAKudos = () => {
     const given = transactions.filter((t) => t.giver_id === currentUser.id);
     const received = transactions.filter((t) => t.receiver_id === currentUser.id);
 
+    const renderTxnDate = (iso) =>
+      new Date(iso + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' });
+
     return (
       <div className="space-y-6">
         <div className="bg-white rounded-lg shadow p-6">
@@ -621,12 +624,8 @@ const VBAKudos = () => {
                         <span className="text-green-600 font-bold">-{txn.points}</span>
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
-                      {txn.core_value && (
-                        <p className="text-xs text-blue-600 mt-1">🏆 {txn.core_value}</p>
-                      )}
-                      <p className="text-gray-400 text-xs mt-1">
-                        {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}
-                      </p>
+                      {txn.core_value && <p className="text-xs text-blue-600 mt-1">🏆 {txn.core_value}</p>}
+                      <p className="text-gray-400 text-xs mt-1">{renderTxnDate(txn.created_on)}</p>
                     </div>
                   </div>
                 );
@@ -663,12 +662,8 @@ const VBAKudos = () => {
                         </span>
                       </div>
                       <p className="text-gray-600 text-sm mt-1">{txn.reason}</p>
-                      {txn.core_value && (
-                        <p className="text-xs text-blue-600 mt-1">🏆 {txn.core_value}</p>
-                      )}
-                      <p className="text-gray-400 text-xs mt-1">
-                        {new Date(txn.created_on + 'Z').toLocaleDateString('en-US', { timeZone: 'America/Chicago' })}
-                      </p>
+                      {txn.core_value && <p className="text-xs text-blue-600 mt-1">🏆 {txn.core_value}</p>}
+                      <p className="text-gray-400 text-xs mt-1">{renderTxnDate(txn.created_on)}</p>
                     </div>
                   </div>
                 );
@@ -692,7 +687,10 @@ const VBAKudos = () => {
           ) : (
             <div className="space-y-3">
               {topReceivers.map((item, idx) => (
-                <div key={item.employee?.id || idx} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={item.employee?.id || idx}
+                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                >
                   <div className="text-2xl font-bold text-gray-400 w-8">#{idx + 1}</div>
                   <div className="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {item.employee?.name?.charAt(0) || '?'}
@@ -715,7 +713,10 @@ const VBAKudos = () => {
           ) : (
             <div className="space-y-3">
               {topGivers.map((item, idx) => (
-                <div key={item.employee?.id || idx} className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+                <div
+                  key={item.employee?.id || idx}
+                  className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                >
                   <div className="text-2xl font-bold text-gray-400 w-8">#{idx + 1}</div>
                   <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-semibold">
                     {item.employee?.name?.charAt(0) || '?'}
@@ -741,7 +742,8 @@ const VBAKudos = () => {
     return (
       <div className="space-y-6">
         <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Your Points Balance</h2>
+          <h2 className="text-2xl font-bold text-gray-800 mb-4">Rewards</h2>
+
           <div className="flex items-center justify-between bg-blue-50 p-6 rounded-lg">
             <div>
               <p className="text-gray-600 text-sm mb-1">Available to Redeem</p>
@@ -753,9 +755,10 @@ const VBAKudos = () => {
               <p className="text-2xl font-bold text-gray-800">100 pts = $5</p>
             </div>
           </div>
+
           {!canRedeem && (
             <div className="mt-4 text-center text-sm text-orange-600 bg-orange-50 py-2 rounded">
-              You need {100 - balance.points_earned} more points to redeem
+              You need {Math.max(0, 100 - (balance.points_earned || 0))} more points to redeem
             </div>
           )}
         </div>
@@ -768,14 +771,16 @@ const VBAKudos = () => {
                 <Gift className="w-6 h-6 text-white" />
               </div>
             </div>
-            <p className="text-gray-600 mb-4">
-              Redeem your points for VBA branded merchandise, apparel, and gear!
-            </p>
+
+            <p className="text-gray-600 mb-4">Shop VBA merchandise, apparel, and gear.</p>
+
             <div className="bg-blue-50 border-l-4 border-blue-500 p-3 mb-4 rounded text-sm text-gray-700">
-              <strong>How it works:</strong> Credit will be automatically added to your account at vba.ourproshop.com
+              <strong>How it works:</strong> Once approved, you’ll receive instructions to use your store credit at
+              vba.ourproshop.com.
             </div>
+
             <div className="space-y-3">
-              
+              <a
                 href="https://vba.ourproshop.com/"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -783,6 +788,7 @@ const VBAKudos = () => {
               >
                 Browse VBA Store →
               </a>
+
               <button
                 onClick={() => redeemPoints('store')}
                 disabled={!canRedeem}
@@ -804,14 +810,15 @@ const VBAKudos = () => {
                 <Gift className="w-6 h-6 text-white" />
               </div>
             </div>
-            <p className="text-gray-600 mb-4">
-              Prefer Amazon? Redeem your points for an Amazon gift card!
-            </p>
+
+            <p className="text-gray-600 mb-4">Redeem your points for an Amazon gift card.</p>
+
             <div className="bg-orange-50 border-l-4 border-orange-500 p-3 mb-4 rounded text-sm text-gray-700">
-              <strong>How it works:</strong> Virtual gift card code will be sent to your work email
+              <strong>How it works:</strong> Once approved, a virtual gift card code will be sent to your work email.
             </div>
+
             <div className="space-y-3">
-              
+              <a
                 href="https://www.amazon.com"
                 target="_blank"
                 rel="noopener noreferrer"
@@ -819,6 +826,7 @@ const VBAKudos = () => {
               >
                 Browse Amazon →
               </a>
+
               <button
                 onClick={() => redeemPoints('amazon')}
                 disabled={!canRedeem}
@@ -836,43 +844,32 @@ const VBAKudos = () => {
 
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-bold text-gray-800 mb-3">Redemption Process</h3>
+
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                <span className="text-xl font-bold text-blue-600">1</span>
+            {[
+              { step: 1, title: 'Earn Points', desc: 'Collect 100+ points' },
+              { step: 2, title: 'Submit Request', desc: 'Click redeem button' },
+              { step: 3, title: 'Admin Approval', desc: 'Processed by HR/Ops' },
+              { step: 4, title: 'Receive Reward', desc: 'Credit or gift card' },
+            ].map((item) => (
+              <div key={item.step} className="text-center">
+                <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                  <span className="text-xl font-bold text-blue-600">{item.step}</span>
+                </div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">{item.title}</p>
+                <p className="text-xs text-gray-600">{item.desc}</p>
               </div>
-              <p className="text-sm font-semibold text-gray-800 mb-1">Earn Points</p>
-              <p className="text-xs text-gray-600">Collect 100+ points</p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                <span className="text-xl font-bold text-blue-600">2</span>
-              </div>
-              <p className="text-sm font-semibold text-gray-800 mb-1">Submit Request</p>
-              <p className="text-xs text-gray-600">Click redeem button</p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                <span className="text-xl font-bold text-blue-600">3</span>
-              </div>
-              <p className="text-sm font-semibold text-gray-800 mb-1">Admin Approval</p>
-              <p className="text-xs text-gray-600">Processed by HR/Ops</p>
-            </div>
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                <span className="text-xl font-bold text-blue-600">4</span>
-              </div>
-              <p className="text-sm font-semibold text-gray-800 mb-1">Receive Reward</p>
-              <p className="text-xs text-gray-600">Credit or gift card</p>
-            </div>
+            ))}
           </div>
-          
+
           <div className="mt-6 space-y-3">
             <div className="bg-blue-50 border-l-4 border-blue-500 p-3 rounded text-sm text-gray-700">
-              <strong>VBA Store Credit:</strong> Once approved, $5 credit will be added to your account at vba.ourproshop.com. Shop anytime!
+              <strong>VBA Store Credit:</strong> Once approved, you’ll receive instructions to apply your credit at
+              vba.ourproshop.com.
             </div>
             <div className="bg-orange-50 border-l-4 border-orange-500 p-3 rounded text-sm text-gray-700">
-              <strong>Amazon Gift Card:</strong> Once approved, a virtual gift card code will be sent to your work email ({currentUser.email}). Check your inbox within 24 hours.
+              <strong>Amazon Gift Card:</strong> Once approved, a virtual gift card code will be sent to your work
+              email ({currentUser?.email}).
             </div>
           </div>
         </div>
@@ -906,12 +903,14 @@ const VBAKudos = () => {
 
         <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-2xl font-bold text-gray-800 mb-6">Pending Redemptions</h2>
+
           {pendingRedemptions.length === 0 ? (
             <p className="text-gray-500 text-center py-8">No pending redemptions</p>
           ) : (
             <div className="space-y-4">
               {pendingRedemptions.map((red) => {
                 const requestor = employees.find((e) => e.id === red.requestor_id);
+
                 return (
                   <div key={red.id} className="border border-gray-200 rounded-lg p-4">
                     <div className="flex items-start justify-between">
@@ -922,18 +921,25 @@ const VBAKudos = () => {
                         <div>
                           <div className="font-semibold text-gray-800">{requestor?.name}</div>
                           <div className="text-sm text-gray-500">{requestor?.department}</div>
+
                           <div className="text-sm text-gray-600 mt-2">
                             <span className="font-medium">Reward:</span>{' '}
                             {red.reward_type === 'amazon' ? 'Amazon Gift Card' : 'VBA Store Credit'}
                           </div>
+
                           <div className="text-sm text-gray-600">
                             <span className="font-medium">Points Used:</span> {red.points_used}
                           </div>
+
                           <div className="text-sm text-gray-500 mt-1">
-                            Requested: {new Date(red.requested_at + 'Z').toLocaleString('en-US', { timeZone: 'America/Chicago' })}
+                            Requested:{' '}
+                            {new Date(red.requested_at + 'Z').toLocaleString('en-US', {
+                              timeZone: 'America/Chicago',
+                            })}
                           </div>
                         </div>
                       </div>
+
                       <div className="flex space-x-2">
                         <button
                           onClick={() => updateRedemptionStatus(red.id, 'issued')}
@@ -941,8 +947,11 @@ const VBAKudos = () => {
                         >
                           Issue
                         </button>
+
                         <button
-                          onClick={() => updateRedemptionStatus(red.id, 'rejected', 'Please contact administrator')}
+                          onClick={() =>
+                            updateRedemptionStatus(red.id, 'rejected', 'Please contact administrator')
+                          }
                           className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
                         >
                           Reject
@@ -1016,7 +1025,7 @@ const VBAKudos = () => {
               { id: 'give', label: 'Give Kudos', icon: Gift },
               { id: 'history', label: 'My History', icon: History },
               { id: 'leaderboard', label: 'Leaderboard', icon: TrendingUp },
-              { id: 'rewards', label: 'Rewards', icon: Gift },
+              { id: 'rewards', label: 'Rewards', icon: ShoppingBag },
               ...(isAdmin(currentUser) ? [{ id: 'admin', label: 'Admin', icon: ShieldCheck }] : []),
             ].map(({ id, label, icon: Icon }) => (
               <button
