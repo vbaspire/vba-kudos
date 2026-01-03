@@ -19,7 +19,7 @@ const VBAKudos = () => {
 
   useEffect(() => {
     initializeSystem();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line
   }, []);
 
   const initializeSystem = async () => {
