@@ -344,6 +344,11 @@ const VBAKudos = () => {
     const progressToNext100 = balance.points_earned % 100;
     const canRedeem = balance.points_earned >= 100;
 
+    // Calculate days until reset
+    const now = new Date();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const daysLeft = Math.ceil((nextMonth - now) / (1000 * 60 * 60 * 24));
+
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -374,9 +379,7 @@ const VBAKudos = () => {
             <div className="text-sm text-gray-500 mt-1">lifetime</div>
           </div>
         </div>
-</div>
 
-        {/* ⏰ COUNTDOWN TIMER */}
         <div className="bg-gradient-to-r from-orange-50 to-red-50 border-l-4 border-orange-500 rounded-lg shadow p-6">
           <div className="flex items-center justify-between">
             <div>
@@ -384,14 +387,7 @@ const VBAKudos = () => {
               <p className="text-sm text-gray-600">Use your points before they reset!</p>
             </div>
             <div className="text-right">
-              <div className="text-3xl font-bold text-orange-600">
-                {(() => {
-                  const now = new Date();
-                  const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-                  const daysLeft = Math.ceil((nextMonth - now) / (1000 * 60 * 60 * 24));
-                  return daysLeft;
-                })()}
-              </div>
+              <div className="text-3xl font-bold text-orange-600">{daysLeft}</div>
               <div className="text-sm text-gray-600">days left</div>
             </div>
           </div>
@@ -401,6 +397,9 @@ const VBAKudos = () => {
             </div>
           )}
         </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">Progress to Next Redemption</h3>
 
         <div className="bg-white rounded-lg shadow p-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">Progress to Next Redemption</h3>
