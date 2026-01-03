@@ -344,7 +344,6 @@ const VBAKudos = () => {
     const progressToNext100 = balance.points_earned % 100;
     const canRedeem = balance.points_earned >= 100;
 
-    // Calculate days until reset
     const now = new Date();
     const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
     const daysLeft = Math.ceil((nextMonth - now) / (1000 * 60 * 60 * 24));
@@ -570,7 +569,7 @@ const VBAKudos = () => {
                 onChange={(e) => setCoreValue(e.target.value)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
               >
-                <option value="">Select a core value</option>
+                <option value="">Select a core value...</option>
                 {CORE_VALUES.map((value) => (
                   <option key={value} value={value}>
                     {value}
@@ -735,85 +734,7 @@ const VBAKudos = () => {
     );
   };
 
-  const AdminScreen = () => {
-    const pendingRedemptions = redemptions.filter((r) => r.status === 'pending');
-    const mostUsedCoreValue = getMostUsedCoreValue();
-
-    return (
-      <div className="space-y-6">
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Core Value Insight (This Month)</h2>
-          {mostUsedCoreValue ? (
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm">Most Used Core Value</p>
-                <p className="text-2xl font-bold text-blue-600">{mostUsedCoreValue.value}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-gray-500 text-sm">Times Selected</p>
-                <p className="text-2xl font-bold text-gray-800">{mostUsedCoreValue.count}</p>
-              </div>
-            </div>
-          ) : (
-            <p className="text-gray-500">No core values selected yet this month.</p>
-          )}
-        </div>
-
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">Pending Redemptions</h2>
-          {pendingRedemptions.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No pending redemptions</p>
-          ) : (
-            <div className="space-y-4">
-              {pendingRedemptions.map((red) => {
-                const requestor = employees.find((e) => e.id === red.requestor_id);
-                return (
-                  <div key={red.id} className="border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start space-x-3">
-                        <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
-                          {requestor?.name?.charAt(0) || '?'}
-                        </div>
-                        <div>
-                          <div className="font-semibold text-gray-800">{requestor?.name}</div>
-                          <div className="text-sm text-gray-500">{requestor?.department}</div>
-                          <div className="text-sm text-gray-600 mt-2">
-                            <span className="font-medium">Reward:</span>{' '}
-                            {red.reward_type === 'amazon' ? 'Amazon Gift Card' : 'VBA Store Credit'}
-                          </div>
-                          <div className="text-sm text-gray-600">
-                            <span className="font-medium">Points Used:</span> {red.points_used}
-                          </div>
-                          <div className="text-sm text-gray-500 mt-1">
-                            Requested: {new Date(red.requested_at + 'Z').toLocaleString('en-US', { timeZone: 'America/Chicago' })}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex space-x-2">
-                        <button
-                          onClick={() => updateRedemptionStatus(red.id, 'issued')}
-                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
-                        >
-                          Issue
-                        </button>
-                        <button
-                          onClick={() => updateRedemptionStatus(red.id, 'rejected', 'Please contact administrator')}
-                          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  };
-const RewardsScreen = () => {
+  const RewardsScreen = () => {
     const balance = getUserBalance(currentUser.id);
     const canRedeem = balance.points_earned >= 100;
 
@@ -958,6 +879,86 @@ const RewardsScreen = () => {
       </div>
     );
   };
+
+  const AdminScreen = () => {
+    const pendingRedemptions = redemptions.filter((r) => r.status === 'pending');
+    const mostUsedCoreValue = getMostUsedCoreValue();
+
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-xl font-bold text-gray-800 mb-2">Core Value Insight (This Month)</h2>
+          {mostUsedCoreValue ? (
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-600 text-sm">Most Used Core Value</p>
+                <p className="text-2xl font-bold text-blue-600">{mostUsedCoreValue.value}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-gray-500 text-sm">Times Selected</p>
+                <p className="text-2xl font-bold text-gray-800">{mostUsedCoreValue.count}</p>
+              </div>
+            </div>
+          ) : (
+            <p className="text-gray-500">No core values selected yet this month.</p>
+          )}
+        </div>
+
+        <div className="bg-white rounded-lg shadow p-6">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">Pending Redemptions</h2>
+          {pendingRedemptions.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No pending redemptions</p>
+          ) : (
+            <div className="space-y-4">
+              {pendingRedemptions.map((red) => {
+                const requestor = employees.find((e) => e.id === red.requestor_id);
+                return (
+                  <div key={red.id} className="border border-gray-200 rounded-lg p-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-start space-x-3">
+                        <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white font-semibold text-lg">
+                          {requestor?.name?.charAt(0) || '?'}
+                        </div>
+                        <div>
+                          <div className="font-semibold text-gray-800">{requestor?.name}</div>
+                          <div className="text-sm text-gray-500">{requestor?.department}</div>
+                          <div className="text-sm text-gray-600 mt-2">
+                            <span className="font-medium">Reward:</span>{' '}
+                            {red.reward_type === 'amazon' ? 'Amazon Gift Card' : 'VBA Store Credit'}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            <span className="font-medium">Points Used:</span> {red.points_used}
+                          </div>
+                          <div className="text-sm text-gray-500 mt-1">
+                            Requested: {new Date(red.requested_at + 'Z').toLocaleString('en-US', { timeZone: 'America/Chicago' })}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex space-x-2">
+                        <button
+                          onClick={() => updateRedemptionStatus(red.id, 'issued')}
+                          className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors"
+                        >
+                          Issue
+                        </button>
+                        <button
+                          onClick={() => updateRedemptionStatus(red.id, 'rejected', 'Please contact administrator')}
+                          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center">
@@ -1015,6 +1016,7 @@ const RewardsScreen = () => {
               { id: 'give', label: 'Give Kudos', icon: Gift },
               { id: 'history', label: 'My History', icon: History },
               { id: 'leaderboard', label: 'Leaderboard', icon: TrendingUp },
+              { id: 'rewards', label: 'Rewards', icon: Gift },
               ...(isAdmin(currentUser) ? [{ id: 'admin', label: 'Admin', icon: ShieldCheck }] : []),
             ].map(({ id, label, icon: Icon }) => (
               <button
@@ -1039,6 +1041,7 @@ const RewardsScreen = () => {
         {activeScreen === 'give' && <GiveKudosScreen />}
         {activeScreen === 'history' && <HistoryScreen />}
         {activeScreen === 'leaderboard' && <LeaderboardScreen />}
+        {activeScreen === 'rewards' && <RewardsScreen />}
         {activeScreen === 'admin' && <AdminScreen />}
       </main>
     </div>
