@@ -104,7 +104,9 @@ const VBAKudos = () => {
     }
 
     const giverName = giver?.name || 'Someone';
-    const emailBody = [
+    const giverFirstName = giverName.split(' ')[0] || 'there';
+    const recipientName = receiver?.name || 'there';
+     const emailBody = [
       `Hi ${receiver.name || 'there'},`,
       '',
       `${giverName} just gave you kudos (+${points}) in VBA Kudos.`,
@@ -123,6 +125,26 @@ const VBAKudos = () => {
           text: emailBody,
         },
       });
+
+      if (giver?.email) {
+        const senderEmailBody = [
+          `Hi ${giverFirstName},`,
+          '',
+          `Your **Kudos** were successfully sent to **${recipientName}** 🙌`,
+          '',
+          'Thanks for recognizing great work and helping keep our culture strong.',
+          '',
+          '— The VBA HR Team',
+        ].join('\n');
+
+        await supabase.functions.invoke('send-kudos-email', {
+          body: {
+            to: giver.email,
+            subject: 'Kudos Sent 🎉',
+            text: senderEmailBody,
+          },
+        });
+      }
     } catch (error) {
       console.error('Error sending kudos email:', error);
     }
