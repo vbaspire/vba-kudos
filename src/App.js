@@ -98,6 +98,36 @@ const VBAKudos = () => {
     setTimeout(() => setShowNotification(null), 3000);
   };
 
+   const sendKudosEmail = async ({ receiver, giver, points, reason }) => {
+    if (!receiver?.email) {
+      return;
+    }
+
+    const giverName = giver?.name || 'Someone';
+    const emailBody = [
+      `Hi ${receiver.name || 'there'},`,
+      '',
+      `${giverName} just gave you kudos (+${points}) in VBA Kudos.`,
+      reason ? `Reason: ${reason}` : null,
+      '',
+      'Log in to view your kudos and give some back!',
+    ]
+      .filter(Boolean)
+      .join('\n');
+
+    try {
+      await supabase.functions.invoke('send-kudos-email', {
+        body: {
+          to: receiver.email,
+          subject: 'You just received kudos!',
+          text: emailBody,
+        },
+      });
+    } catch (error) {
+      console.error('Error sending kudos email:', error);
+    }
+  };
+
   const giveKudos = async (receiverId, points, reason, coreValue = null) => {
     if (!currentUser || receiverId === currentUser.id) {
       notify('Cannot give kudos to yourself', 'error');
@@ -137,8 +167,15 @@ const VBAKudos = () => {
         created_on: new Date().toISOString(),
       });
 
-      await loadData();
       const receiver = employees.find((e) => e.id === receiverId);
+       await sendKudosEmail({
+        receiver,
+        giver: currentUser,
+        points,
+        reason,
+      });
+
+      await loadData();
       notify(`Kudos sent to ${receiver?.name || 'employee'}!`, 'success');
       setActiveScreen('home');
     } catch (error) {
