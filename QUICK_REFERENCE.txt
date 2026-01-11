@@ -1,0 +1,65 @@
+═══════════════════════════════════════════════════════════════
+  VBA KUDOS → VBA MEMBER PORTAL INTEGRATION - QUICK REFERENCE
+═══════════════════════════════════════════════════════════════
+
+📋 FILES TO COPY:
+-----------------
+
+1. KudosTab-STANDALONE.js
+   → Copy to: vba-member-portal/src/components/KudosTab.js
+
+2. src/supabaseClient.js
+   → Copy to: vba-member-portal/src/supabaseClient.js
+   (Skip if portal already has this file with same config)
+
+
+📦 DEPENDENCIES TO ADD:
+-----------------------
+
+In vba-member-portal/package.json, add:
+
+  "@supabase/supabase-js": "^2.39.0"
+  "lucide-react": "^0.263.1"
+
+Then run: npm install
+
+
+🔌 HOW TO USE:
+--------------
+
+Import in your app:
+  import KudosTab from './components/KudosTab';
+
+Use in your JSX:
+  <KudosTab currentUser={currentUser} />
+
+currentUser must have:
+  {
+    id: 'user_id',
+    name: 'User Name',
+    email: 'user@email.com',
+    department: 'Department',
+    active: true
+  }
+
+
+✅ WHAT'S BEEN CHANGED:
+-----------------------
+
+✓ Removed login screen
+✓ Removed logout functionality
+✓ Removed header (assumes portal has global header)
+✓ Now accepts currentUser as prop
+✓ Ready to be used as a tab component
+✓ Kept all kudos functionality intact
+
+
+📄 DETAILED GUIDES:
+-------------------
+
+See these files for more details:
+  - COPY_TO_PORTAL.md (step-by-step guide)
+  - INTEGRATION_GUIDE.md (technical details)
+
+
+═══════════════════════════════════════════════════════════════
