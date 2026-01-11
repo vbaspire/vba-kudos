@@ -1,11 +1,18 @@
 # Files to Copy to vba-member-portal
 
-## Step 1: Copy Main Component File
+## Step 1: Copy Main Component Files
 
-**File:** `KudosTab-STANDALONE.js`
-**Destination:** `vba-member-portal/src/components/KudosTab.js`
+### TypeScript Version (RECOMMENDED for vba-member-portal)
 
-This is the main kudos component without the login screen.
+**Files to copy:**
+1. `KudosTab.tsx` → `vba-member-portal/src/components/KudosTab.tsx`
+2. `kudos-types.ts` → `vba-member-portal/src/types/kudos-types.ts` (or wherever you keep types)
+
+### JavaScript Version (Alternative)
+
+**File:** `KudosTab-STANDALONE.js` → `vba-member-portal/src/components/KudosTab.js`
+
+**Note:** Since vba-member-portal is a TypeScript project, we recommend using the TypeScript version (KudosTab.tsx + kudos-types.ts).
 
 ---
 

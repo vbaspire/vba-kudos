@@ -3,13 +3,25 @@
 ## Overview
 This guide will help you integrate the VBA Kudos feature as a tab in the vba-member-portal.
 
+**Important:** vba-member-portal is a TypeScript project, so we provide both TypeScript and JavaScript versions.
+
 ## Files to Copy to vba-member-portal
 
-### 1. Create `src/components/KudosTab.js` (or similar path based on your structure)
-Copy the contents from `KudosTab-STANDALONE.js` (see below)
+### TypeScript Version (RECOMMENDED)
 
-### 2. Create or update `src/supabaseClient.js`
-Copy the Supabase configuration
+1. **`KudosTab.tsx`** → `src/components/KudosTab.tsx`
+   - Main component with full TypeScript support
+
+2. **`kudos-types.ts`** → `src/types/kudos-types.ts`
+   - Type definitions for Employee, Balance, Transaction, etc.
+
+3. **`src/supabaseClient.js`** → `src/supabaseClient.ts` (or .js)
+   - Supabase configuration
+
+### JavaScript Version (Alternative)
+
+1. **`KudosTab-STANDALONE.js`** → `src/components/KudosTab.js`
+2. **`src/supabaseClient.js`** → `src/supabaseClient.js`
 
 ### 3. Update Dependencies in `package.json`
 Add these dependencies if not already present:

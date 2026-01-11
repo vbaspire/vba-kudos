@@ -2,15 +2,28 @@
   VBA KUDOS → VBA MEMBER PORTAL INTEGRATION - QUICK REFERENCE
 ═══════════════════════════════════════════════════════════════
 
-📋 FILES TO COPY:
------------------
+📋 FILES TO COPY (TypeScript - RECOMMENDED):
+--------------------------------------------
+
+1. KudosTab.tsx
+   → Copy to: vba-member-portal/src/components/KudosTab.tsx
+
+2. kudos-types.ts
+   → Copy to: vba-member-portal/src/types/kudos-types.ts
+
+3. src/supabaseClient.js
+   → Copy to: vba-member-portal/src/supabaseClient.ts
+   (Skip if portal already has this file with same config)
+
+
+📋 ALTERNATIVE (JavaScript):
+----------------------------
 
 1. KudosTab-STANDALONE.js
    → Copy to: vba-member-portal/src/components/KudosTab.js
 
 2. src/supabaseClient.js
    → Copy to: vba-member-portal/src/supabaseClient.js
-   (Skip if portal already has this file with same config)
 
 
 📦 DEPENDENCIES TO ADD:
